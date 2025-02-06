@@ -6,7 +6,6 @@
 constexpr auto WORLD_SIZE = 3;
 
 class World {
-	BlockId data[WORLD_SIZE * WORLD_SIZE * WORLD_SIZE];
 	std::vector<std::vector<std::vector<Chunk>>> chunks;
 
 	struct ModelData {

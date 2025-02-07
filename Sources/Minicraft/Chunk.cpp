@@ -2,22 +2,26 @@
 
 #include "Chunk.h"
 
-Chunk::Chunk(Vector3 pos, bool isOnTop, Chunk* xPos, Chunk* xNeg, Chunk* yPos, Chunk* yNeg, Chunk* zPos, Chunk* zNeg):
+Chunk::Chunk(Vector3 pos, Vector2 coord, siv::PerlinNoise& perlin, bool isOnTop):
 	model(Matrix::CreateTranslation(pos)),
 	size(Vector3{BLOCK_PER_CHUNK, BLOCK_PER_CHUNK , BLOCK_PER_CHUNK }),
-	xPos(xPos),
-	xNeg(xNeg),
-	yPos(yPos),
-	yNeg(yNeg),
-	zPos(zPos),
-	zNeg(zNeg)
+	xPos(nullptr),
+	xNeg(nullptr),
+	yPos(nullptr),
+	yNeg(nullptr),
+	zPos(nullptr),
+	zNeg(nullptr)
 {
 	for (int i = 0; i < size.x; i++) {
 		cubesData.emplace_back();
 		for (int j = 0; j < size.x; j++) {
 			cubesData[i].emplace_back();
 			for (int k = 0; k < size.x; k++) {
-				cubesData[i][j].push_back({ j == size.x - 1 && isOnTop ? GRASS : DIRT, SIDE::ALL });
+				cubesData[i][j].push_back({ 
+					perlin.octave2D_01((float)(coord.x*CHUNK_SIZE + i) / 15.f, (float)(coord.y*CHUNK_SIZE + k) / 15.f,3)
+					* CHUNK_SIZE / 2 + CHUNK_SIZE / 2 > j ? DIRT : EMPTY, 
+					SIDE::ALL
+				});
 			}
 		}
 	}
@@ -76,8 +80,10 @@ void Chunk::PushFace(Vector3 pos, Vector3 up, Vector3 right, int id) {
 	ib.PushTriangle(c, b, d);
 }
 
-void Chunk::PushCube(Vector3 pos, CubeData cubeData)
+void Chunk::PushCube(Vector3 pos, CubeData& cubeData)
 {
+	if(cubeData.blockId == EMPTY) return;
+	if (cubeData.blockId == DIRT && GetCubeId(pos.x, pos.y + 1, pos.z) == EMPTY) cubeData.blockId = GRASS;
 	auto& data = BlockData::Get(cubeData.blockId);
 	float uvxSide = (data.texIdSide % 16) / BLOCK_TEXSIZE;
 	float uvySide = (data.texIdSide / 16) / BLOCK_TEXSIZE;

@@ -3,6 +3,9 @@
 #include "Engine/Buffers.h"
 #include "Engine/VertexLayout.h"
 #include "Minicraft/Block.h"
+#include "PerlinNoise.hpp"
+
+class World;
 
 namespace SIDE {
 	constexpr uint8_t NONE = 0b00000000;
@@ -30,10 +33,6 @@ class Chunk {
 
 	Vector3 size;
 
-public:
-	Matrix model;
-	std::vector<std::vector<std::vector<CubeData>>> cubesData;
-
 	Chunk* xPos;
 	Chunk* xNeg;
 	Chunk* yPos;
@@ -41,20 +40,22 @@ public:
 	Chunk* zPos;
 	Chunk* zNeg;
 
+public:
+	Matrix model;
+	std::vector<std::vector<std::vector<CubeData>>> cubesData;
+
 	Chunk(Vector3 pos,
-		  bool isOnTop = false,
-		  Chunk* xPos = nullptr,
-		  Chunk* xNeg = nullptr,
-		  Chunk* yPos = nullptr,
-		  Chunk* yNeg = nullptr,
-		  Chunk* zPos = nullptr,
-		  Chunk* zNeg = nullptr);
+		  Vector2 coord,
+		  siv::PerlinNoise& perlin,
+		  bool isOnTop = false);
 
 	void Generate(DeviceResources* deviceRes);
 	void Draw(DeviceResources* deviceRes);
 
 private:
 	void PushFace(Vector3 pos, Vector3 up, Vector3 right, int id);
-	void PushCube(Vector3 pos, CubeData cubeData);
+	void PushCube(Vector3 pos, CubeData& cubeData);
 	BlockId GetCubeId(int x, int y, int z);
+
+	friend World;
 };

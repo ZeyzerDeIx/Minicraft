@@ -1,24 +1,29 @@
 #include "pch.h"
 
 #include "World.h"
-#include "Minicraft/PerlinNoise.h"
+#include "PerlinNoise.hpp"
 
 void World::Generate(DeviceResources* deviceRes) {
+	siv::PerlinNoise perlin(1656161);
 
 
-	for(int i = 0 ; i < WORLD_SIZE ; i++) {
+	for(int i = 0 ; i < WORLD_SIZE_W ; i++) {
 		chunks.emplace_back();
-		for (int j = 0; j < WORLD_SIZE; j++) {
+		for (int j = 0; j < WORLD_SIZE_H; j++) {
 			chunks[i].emplace_back();
-			for (int k = 0; k < WORLD_SIZE; k++) {
-				chunks[i][j].emplace_back(Vector3{(float)(i*CHUNK_SIZE), (float)(j*CHUNK_SIZE), (float)(k*CHUNK_SIZE)}, j == WORLD_SIZE-1);
+			for (int k = 0; k < WORLD_SIZE_W; k++) {
+				chunks[i][j].emplace_back(
+					Vector3{(float)(i*CHUNK_SIZE), (float)(j*CHUNK_SIZE), (float)(k*CHUNK_SIZE)},
+					Vector2{(float)i,(float)k},
+					perlin,
+					j == WORLD_SIZE_H-1);
 			}
 		}
 	}
 	
-	for (int i = 0; i < WORLD_SIZE; i++) {
-		for (int j = 0; j < WORLD_SIZE; j++) {
-			for (int k = 0; k < WORLD_SIZE; k++) {
+	for (int i = 0; i < WORLD_SIZE_W; i++) {
+		for (int j = 0; j < WORLD_SIZE_H; j++) {
+			for (int k = 0; k < WORLD_SIZE_W; k++) {
 				chunks[i][j][k].xPos = GetChunk(i + 1, j, k);
 				chunks[i][j][k].xNeg = GetChunk(i - 1, j, k);
 				chunks[i][j][k].yPos = GetChunk(i, j + 1, k);
